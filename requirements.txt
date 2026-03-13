@@ -1,0 +1,33 @@
+# Server
+fastapi
+uvicorn
+gunicorn
+
+# HTTP client
+httpx
+requests
+
+# Data validation & settings
+pydantic
+pydantic-settings
+python-dotenv
+
+# Authentication & security
+python-jose[cryptography]
+passlib[bcrypt]
+
+# Database (session/key storage)
+sqlalchemy
+aiosqlite
+
+# AI model serving
+ollama
+openai
+
+# MCP (Model Context Protocol)
+mcp
+
+# Utilities
+python-multipart
+sse-starlette
+websockets
