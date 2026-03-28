@@ -24,10 +24,10 @@ aiosqlite
 ollama
 openai
 
-# MCP (Model Context Protocol)
-mcp
-
 # Utilities
 python-multipart
 sse-starlette
 websockets
+
+# Graph
+langgraph

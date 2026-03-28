@@ -1,0 +1,94 @@
+from functools import lru_cache
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    # --- App ---
+    app_name: str = "AgentProxy"
+    debug: bool = False
+
+    # --- API Keys ---
+    anthropic_api_key: str = ""
+    google_api_key: str = ""
+    openai_api_key: str = ""
+
+    # --- Default LLM ---
+    default_provider: str = "ollama"
+    default_model: str = "llama3"
+
+    # --- Ollama ---
+    ollama_base_url: str = "http://localhost:11434"
+
+    # --- Server ---
+    host: str = "0.0.0.0"
+    port: int = 8000
+
+    # --- Database ---
+    db_url: str = "sqlite+aiosqlite:///data/agentproxy.db"
+
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+
+
+@lru_cache
+def get_settings() -> Settings:
+    """Cached singleton — call this instead of Settings() directly."""
+    return Settings()
+
+
+def get_llm(provider: str | None = None, model: str | None = None):
+    """Return a LangChain ChatModel for the given provider and model.
+
+    Falls back to settings defaults when args are omitted.
+
+    Usage:
+        llm = get_llm()
+        llm = get_llm("gemini", "gemini-2.0-flash")
+        llm = get_llm("claude", "claude-sonnet-4")
+        llm = get_llm("openai", "gpt-4o")
+        llm = get_llm("ollama", "llama3")
+    """
+    settings = get_settings()
+    provider = provider or settings.default_provider
+    model = model or settings.default_model
+
+    match provider:
+        case "anthropic":
+            from langchain_anthropic import ChatAnthropic
+
+            return ChatAnthropic(
+                model=model,
+                api_key=settings.anthropic_api_key,
+            )
+        case "google":
+            from langchain_google_genai import ChatGoogleGenerativeAI
+
+            return ChatGoogleGenerativeAI(
+                model=model,
+                google_api_key=settings.google_api_key,
+            )
+        case "openai":
+            from langchain_openai import ChatOpenAI
+
+            return ChatOpenAI(
+                model=model,
+                api_key=settings.openai_api_key,
+            )
+        case "ollama":
+            from langchain_ollama import ChatOllama
+
+            return ChatOllama(
+                model=model,
+                base_url=settings.ollama_base_url,
+            )
+        case _:
+            raise ValueError(f"Unknown provider: {provider}")
+
+
+if __name__ == "__main__":
+    s = get_settings()
+    print(f"App:      {s.app_name}")
+    print(f"Provider: {s.default_provider}")
+    print(f"Model:    {s.default_model}")
+    print(f"Server:   {s.host}:{s.port}")
+    print(f"DB:       {s.db_url}")
+    print(f"Debug:    {s.debug}")
+    print("\nSettings loaded successfully.")
