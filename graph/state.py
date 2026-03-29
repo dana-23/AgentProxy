@@ -18,6 +18,7 @@ class AgentState(MessagesState):
     add-semantics) and adds fields the orchestrator injects.
     """
 
+    messages: str
     task: dict[str, Any]
     result: dict[str, Any]
 

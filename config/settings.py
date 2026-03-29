@@ -1,5 +1,8 @@
 from functools import lru_cache
+from pathlib import Path
 from pydantic_settings import BaseSettings
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Settings(BaseSettings):
     # --- App ---
@@ -13,7 +16,7 @@ class Settings(BaseSettings):
 
     # --- Default LLM ---
     default_provider: str = "google"
-    default_model: str = "gemini2.5-pro"
+    default_model: str = "gemini2.5-flash"
 
     # --- Ollama ---
     ollama_base_url: str = "http://localhost:11434"
@@ -25,7 +28,7 @@ class Settings(BaseSettings):
     # --- Database ---
     db_url: str = "sqlite+aiosqlite:///data/agentproxy.db"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": BASE_DIR / ".env", "env_file_encoding": "utf-8"}
 
 
 @lru_cache
