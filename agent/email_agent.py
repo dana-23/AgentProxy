@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Any
+import yaml
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -22,6 +23,8 @@ from graph.state import AgentState
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 TOKEN_PATH = BASE_DIR / "token.json"
 CREDENTIALS_PATH = BASE_DIR / "credentials.json"
+
+prompts_path = os.path.join(os.path.dirname(__file__), '..', 'prompts.yaml')
 
 
 def _get_gmail_service():
@@ -106,11 +109,12 @@ class EmailAgent(BaseAgent):
     def build_graph(self) -> StateGraph:
         llm_with_tools = self.llm.bind_tools(TOOLS)
 
-        system = SystemMessage(content=(
-            "You are an email assistant. When given email data, provide a concise "
-            "summary of each email in 1-2 sentences — describe what it's about, not "
-            "just repeat the raw fields. Categorize each as: ACTION NEEDED, FYI, or IGNORE."
-        ))
+        with open(prompts_path, 'r') as file:
+            data = yaml.safe_load(file)
+
+        system = SystemMessage(
+            content=data.get("agents", {}).get(f"{self.name}", {}).get('system')
+        )
 
         def call_llm(state: AgentState) -> dict:
             messages = [system] + list(state["messages"])
