@@ -20,10 +20,6 @@ passlib[bcrypt]
 sqlalchemy
 aiosqlite
 
-# AI model serving
-ollama
-openai
-
 # Utilities
 python-multipart
 sse-starlette
@@ -40,6 +36,9 @@ langchain-openai
 langchain-ollama
 
 # Google Client Libraries
-google-api-python-client 
-google-auth-httplib2 
+google-api-python-client
+google-auth-httplib2
 google-auth-oauthlib
+
+# Discord
+discord.py
