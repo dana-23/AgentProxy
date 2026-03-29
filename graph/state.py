@@ -1,12 +1,11 @@
 """Shared state schemas for the orchestrator and agent subgraphs."""
 
-from __future__ import annotations
-
 import operator
 from dataclasses import dataclass, field
 from typing import Annotated, Any
 
-from langgraph.graph import MessagesState
+from langchain_core.messages import AnyMessage  # needed for get_type_hints on Python <3.12
+from langgraph.graph import MessagesState, add_messages
 
 
 # ── Agent-level state ────────────────────────────────────────────────
@@ -17,8 +16,7 @@ class AgentState(MessagesState):
     Extends MessagesState (which provides a `messages` list with
     add-semantics) and adds fields the orchestrator injects.
     """
-
-    messages: str
+    
     task: dict[str, Any]
     result: dict[str, Any]
 

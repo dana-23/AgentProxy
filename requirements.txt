@@ -38,3 +38,8 @@ langchain-anthropic
 langchain-google-genai
 langchain-openai
 langchain-ollama
+
+# Google Client Libraries
+google-api-python-client 
+google-auth-httplib2 
+google-auth-oauthlib

@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+markers = [
+    "integration: tests that make real API calls (deselect with '-m \"not integration\"')",
+]
