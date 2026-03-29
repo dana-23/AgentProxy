@@ -31,3 +31,10 @@ websockets
 
 # Graph
 langgraph
+langchain-core
+
+# LLM providers (install as needed)
+langchain-anthropic
+langchain-google-genai
+langchain-openai
+langchain-ollama

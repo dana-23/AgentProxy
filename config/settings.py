@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
 
     # --- Default LLM ---
-    default_provider: str = "ollama"
-    default_model: str = "llama3"
+    default_provider: str = "google"
+    default_model: str = "gemini2.5-pro"
 
     # --- Ollama ---
     ollama_base_url: str = "http://localhost:11434"
@@ -41,8 +41,8 @@ def get_llm(provider: str | None = None, model: str | None = None):
 
     Usage:
         llm = get_llm()
-        llm = get_llm("gemini", "gemini-2.0-flash")
-        llm = get_llm("claude", "claude-sonnet-4")
+        llm = get_llm("google", "gemini-2.0-flash")
+        llm = get_llm("anthropic", "claude-sonnet-4")
         llm = get_llm("openai", "gpt-4o")
         llm = get_llm("ollama", "llama3")
     """
