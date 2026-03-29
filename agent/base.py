@@ -37,7 +37,7 @@ class BaseAgent(ABC):
         """Compile the subgraph — kwargs forwarded to StateGraph.compile."""
         return self.build_graph().compile(**kwargs)
 
-    def __call__(self, state: AgentState, **kwargs: Any) -> dict[str, Any]:
+    async def __call__(self, state: AgentState, **kwargs: Any) -> dict[str, Any]:
         """Run the compiled graph and return the final state diff."""
         compiled = self.compile(**kwargs)
-        return compiled.invoke(state)
+        return await compiled.ainvoke(state)

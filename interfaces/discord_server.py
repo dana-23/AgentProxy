@@ -33,9 +33,10 @@ class DiscordServer:
             if message.author == self.client.user:
                 return
 
+            is_dm = isinstance(message.channel, discord.DMChannel)
             mentioned = self.client.user in message.mentions
-            in_agent_channel = message.channel.name == self.channel_name
-            if not (mentioned or in_agent_channel):
+            in_agent_channel = getattr(message.channel, "name", None) == self.channel_name
+            if not (is_dm or mentioned or in_agent_channel):
                 return
 
             query = message.content.replace(f"<@{self.client.user.id}>", "").strip()
