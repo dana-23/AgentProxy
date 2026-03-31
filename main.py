@@ -6,5 +6,5 @@ from config.settings import get_settings, get_llm
 if __name__ == "__main__":
     settings = get_settings()
     graph = EmailAgent(llm=get_llm()).compile(checkpointer=MemorySaver())
-    server = DiscordServer(graph)
+    server = DiscordServer(graph, debug=settings.debug)
     server.run(settings.discord_bot_token)
