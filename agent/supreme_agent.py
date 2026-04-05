@@ -19,8 +19,12 @@ from graph.state import AgentState
 
 prompts_path = os.path.join(os.path.dirname(__file__), '..', 'prompts.yaml')
 
+class AgentTask(BaseModel):
+    agent: str
+    subtask: str
+
 class CallSubAgent(BaseModel):
-    agent: List[str]
+    tasks: List[AgentTask]
 
 class SupremeAgent(BaseAgent):
 
@@ -39,7 +43,7 @@ class SupremeAgent(BaseAgent):
         def call_llm(state: AgentState) -> dict:
             messages = [system] + list(state["messages"])
             response = structure_llm.invoke(messages)
-            return {"result": {"agents": response.agent}}
+            return {"result": {"tasks": [{"agent": t.agent, "subtask": t.subtask} for t in response.tasks]}}   
 
         graph = StateGraph(AgentState)
 
@@ -59,7 +63,10 @@ if __name__ == "__main__":
     llm = get_llm()
     supreme_agent = SupremeAgent(llm=llm)
     result = asyncio.run(
-        supreme_agent(state={"messages": [HumanMessage(content="Summarize my last received email.")]})
+        supreme_agent(state={"messages": [HumanMessage(
+            content="Summarize my recent email and write a follow up email to john doe for his car's extended warrenty."
+            )]}
+        )
     )
 
     print(result["result"])
