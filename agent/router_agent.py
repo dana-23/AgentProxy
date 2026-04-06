@@ -1,4 +1,4 @@
-""" A Supreme Agent - Allocate's work to subagents."""
+""" A Router Agent - Allocate's work to subagents."""
 
 from __future__ import annotations
 
@@ -26,9 +26,9 @@ class AgentTask(BaseModel):
 class CallSubAgent(BaseModel):
     tasks: List[AgentTask]
 
-class SupremeAgent(BaseAgent):
+class RouterAgent(BaseAgent):
 
-    name: str = "supreme"
+    name: str = "router"
 
     def build_graph(self) -> StateGraph:
         structure_llm = self.llm.with_structured_output(CallSubAgent)
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     from config.settings import get_llm
 
     llm = get_llm()
-    supreme_agent = SupremeAgent(llm=llm)
+    supreme_agent = RouterAgent(llm=llm)
     result = asyncio.run(
         supreme_agent(state={"messages": [HumanMessage(
             content="Summarize my recent email and write a follow up email to john doe for his car's extended warrenty."
