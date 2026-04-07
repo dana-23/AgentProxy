@@ -189,10 +189,13 @@ class FinanceAgent(BaseAgent):
 
         with open(prompts_path, 'r') as file:
             data = yaml.safe_load(file)
+        
+        data_directory = BASE_DIR / "data"
+        data_directory.touch(exist_ok=True)
 
         prompt_template = data.get("agents", {}).get(f"{self.name}", {}).get('system')
         system = SystemMessage(
-            content=prompt_template.format(data_dir=str(BASE_DIR / "data"))
+            content=prompt_template.format(data_dir=str(data_directory))
         )
 
         async def call_llm(state: AgentState) -> dict:
