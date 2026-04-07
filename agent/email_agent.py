@@ -143,16 +143,20 @@ class EmailAgent(BaseAgent):
 
 if __name__ == "__main__":
     from config.settings import get_llm
+    import asyncio
 
-    llm = get_llm()
-    email_agent = EmailAgent(llm=llm)
-    result = email_agent(state={"messages": "Summarize my last received email."})
+    async def main():
+        llm = get_llm()
+        email_agent = EmailAgent(llm=llm)
+        result = await email_agent(state={"messages": "Summarize my last received email."})
 
-    # Print only the final AI response
-    last_msg = result["messages"][-1]
-    content = last_msg.content
-    if isinstance(content, list):
-        text = next((block["text"] for block in content if block.get("type") == "text"), "")
-    else:
-        text = content
-    print(text)
+        # Print only the final AI response
+        last_msg = result["messages"][-1]
+        content = last_msg.content
+        if isinstance(content, list):
+            text = next((block["text"] for block in content if block.get("type") == "text"), "")
+        else:
+            text = content
+        print(text)
+    
+    asyncio.run(main())
