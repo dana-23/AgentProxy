@@ -13,6 +13,7 @@ agents:
 
       Available agents:
         - "email" — Read, write, summarize, or triage emails.
+        - "finance" - Read, or write financial expenses.
 
       Rules:
         1. Pick the most specific agent that matches the user's intent.

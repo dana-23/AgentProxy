@@ -18,7 +18,7 @@ class AgentState(MessagesState):
     """
     
     task: dict[str, Any]
-    result: dict[str, Any]
+    result: Annotated[list[str], operator.add]
 
 
 # ── Task descriptor ──────────────────────────────────────────────────

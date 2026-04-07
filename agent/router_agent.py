@@ -11,18 +11,22 @@ from pydantic import BaseModel
 from langchain_core.messages import SystemMessage
 from langgraph.graph import StateGraph, START, END
 
+from langgraph.graph import MessagesState
+
 from agent.base import BaseAgent
 from config.settings import BASE_DIR
-from graph.state import AgentState
 from graph.state import Task
+
+
+class RouterState(MessagesState):
+    tasks: list[dict]
 
 prompts_path = os.path.join(os.path.dirname(__file__), '..', 'prompts.yaml')
 
 class CallSubAgent(BaseModel):
     tasks: List[Task]
 
-KNOWN_AGENTS = {"email"}  # expand as new agents are added
-
+KNOWN_AGENTS = {"email", "finance"}  # expand as new agents are added
 
 class RouterAgent(BaseAgent):
 
@@ -38,7 +42,7 @@ class RouterAgent(BaseAgent):
             content=data.get("agents", {}).get(f"{self.name}", {}).get('system')
         )
 
-        def call_llm(state: AgentState) -> dict:
+        def call_llm(state: RouterState) -> dict:
             messages = [system] + list(state["messages"])
             response = structure_llm.invoke(messages)
             tasks = [
@@ -46,9 +50,9 @@ class RouterAgent(BaseAgent):
                 for t in response.tasks
                 if t.agent in KNOWN_AGENTS
             ]
-            return {"result": {"tasks": tasks}}
+            return {"tasks": tasks}
 
-        graph = StateGraph(AgentState)
+        graph = StateGraph(RouterState)
 
         graph.add_node("call_llm", call_llm)
 
@@ -72,4 +76,4 @@ if __name__ == "__main__":
         )
     )
 
-    print(result["result"])
+    print(result["tasks"])

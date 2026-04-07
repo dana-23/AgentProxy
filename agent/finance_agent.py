@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 from pydantic import BaseModel, Field
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import SystemMessage, HumanMessage
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, START, END
 
 from agent.base import BaseAgent
@@ -237,20 +238,26 @@ if __name__ == "__main__":
 
     async def main():
         finance_agent = FinanceAgent(llm=get_llm())
-        result = await finance_agent(
-            state={
-                "messages": "I had coffee for $5.5 today from starbucks."
-            }
-        )
+        compiled = finance_agent.compile(checkpointer=MemorySaver())
 
-        # Print only the final AI response
-        last_msg = result["messages"][-1]
-        content = last_msg.content
-        if isinstance(content, list):
-            text = next((block["text"] for block in content if block.get("type") == "text"), "")
-        else:
-            text = content
-        print(text)
+        config = {"configurable": {"thread_id": "finance-session-1"}}
+
+        while True:
+            user_input = input("\nYou: ").strip()
+            if user_input.lower() in ("quit", "exit", "q"):
+                break
+
+            result = await compiled.ainvoke(
+                {"messages": [HumanMessage(content=user_input)]},
+                config=config,
+            )
+
+            last_msg = result["messages"][-1]
+            content = last_msg.content
+            if isinstance(content, list):
+                text = next((b["text"] for b in content if b.get("type") == "text"), "")
+            else:
+                text = content
+            print(f"\nAgent: {text}")
     
     asyncio.run(main())
-    

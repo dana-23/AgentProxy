@@ -3,18 +3,24 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 from graph.state import OrchestratorState, AgentState
 from agent.router_agent import RouterAgent, KNOWN_AGENTS
+
 from agent.email_agent import EmailAgent
+from agent.finance_agent import FinanceAgent
 
 
 def build_agent_registry(llm):
     return {
         "email": EmailAgent(llm=llm).compile(),
+        "finance": FinanceAgent(llm=llm).compile()
     }
 
 def make_agent_node(compiled_agent):
     async def node(state: OrchestratorState):
-        result = await compiled_agent.ainvoke(state) # basically call_llm()
-        return {"agent_results": [result]}
+        result = await compiled_agent.ainvoke({"messages": state["messages"]})
+        return {
+            "agent_results": [result],
+            "messages": [result["messages"][-1]],
+        }
     return node
 
 def dispatch(state: OrchestratorState):
@@ -23,14 +29,13 @@ def dispatch(state: OrchestratorState):
         for task in state["plan"]
     ]
 
-
 def build_orchestrator(llm):
     router = RouterAgent(llm=llm).compile()
     registry = build_agent_registry(llm)
 
     async def route(state: OrchestratorState):
         result = await router.ainvoke({"messages": state["messages"]})
-        return {"plan": result["result"]["tasks"]}
+        return {"plan": result["tasks"]}
 
     graph = StateGraph(OrchestratorState)
 
@@ -58,10 +63,16 @@ if __name__ == "__main__":
 
         response = await graph.ainvoke(
             {"messages": [HumanMessage(
-                content="Summarize my recent email and send an email to john doe"
+                content="What did I buy today?"
             )]},
             config={"configurable": {"thread_id": "test"}},
         )
-        print(response)
+        last_msg = response["messages"][-1]
+        content = last_msg.content
+        if isinstance(content, list):
+            text = next((b["text"] for b in content if b.get("type") == "text"), "")
+        else:
+            text = content
+        print(f"\nAgent: {text}")
 
     asyncio.run(main())
