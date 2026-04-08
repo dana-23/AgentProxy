@@ -1,11 +1,11 @@
 from langgraph.types import Send
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
-from graph.state import OrchestratorState, AgentState
-from agent.router_agent import RouterAgent, KNOWN_AGENTS
+from agentproxy.graph.state import OrchestratorState, AgentState
+from agentproxy.agent.router_agent import RouterAgent, KNOWN_AGENTS
 
-from agent.email_agent import EmailAgent
-from agent.finance_agent import FinanceAgent
+from agentproxy.agent.email_agent import EmailAgent
+from agentproxy.agent.finance_agent import FinanceAgent
 
 
 def build_agent_registry(llm):
@@ -52,7 +52,7 @@ def build_orchestrator(llm):
 
 if __name__ == "__main__":
     import asyncio
-    from config.settings import get_llm
+    from agentproxy.config.settings import get_llm
     from langchain_core.messages import HumanMessage
 
     async def main():

@@ -2,7 +2,8 @@ from functools import lru_cache
 from pathlib import Path
 from pydantic_settings import BaseSettings
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+PACKAGE_DIR = Path(__file__).resolve().parent.parent  # agentproxy/
+BASE_DIR = PACKAGE_DIR.parent                         # project root
 
 class Settings(BaseSettings):
     # --- App ---
@@ -18,16 +19,6 @@ class Settings(BaseSettings):
     # --- Default LLM ---
     default_provider: str = "google"
     default_model: str = "gemini2.5-flash"
-
-    # --- Ollama ---
-    ollama_base_url: str = "http://localhost:11434"
-
-    # --- Server ---
-    host: str = "0.0.0.0"
-    port: int = 8000
-
-    # --- Database ---
-    db_url: str = "sqlite+aiosqlite:///data/agentproxy.db"
 
     model_config = {"env_file": BASE_DIR / ".env", "env_file_encoding": "utf-8"}
 
@@ -92,7 +83,5 @@ if __name__ == "__main__":
     print(f"App:      {s.app_name}")
     print(f"Provider: {s.default_provider}")
     print(f"Model:    {s.default_model}")
-    print(f"Server:   {s.host}:{s.port}")
-    print(f"DB:       {s.db_url}")
     print(f"Debug:    {s.debug}")
     print("\nSettings loaded successfully.")

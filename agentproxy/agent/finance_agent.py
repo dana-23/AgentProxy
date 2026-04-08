@@ -20,10 +20,10 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, START, END
 
-from agent.base import BaseAgent
-from config.settings import BASE_DIR
-from graph.state import AgentState
-from graph.state import Task
+from agentproxy.agent.base import BaseAgent
+from agentproxy.config.settings import BASE_DIR
+from agentproxy.graph.state import AgentState
+from agentproxy.graph.state import Task
 
 prompts_path = Path(__file__).parent.parent / Path("prompts.yaml")
 
@@ -232,8 +232,8 @@ class FinanceAgent(BaseAgent):
 
 if __name__ == "__main__":
     import asyncio
-    from config.settings import get_llm
-    from config.logger import setup_logging
+    from agentproxy.config.settings import get_llm
+    from agentproxy.config.logger import setup_logging
     setup_logging()
 
     async def main():

@@ -1,3 +1,53 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentproxy"
+version = "0.1.0"
+description = "AI-powered agent that automates daily tasks."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "pydantic",
+    "pydantic-settings",
+    "python-dotenv",
+    "sqlalchemy",
+    "aiosqlite",
+    "sse-starlette",
+    "websockets",
+    "langgraph",
+    "langchain-core",
+    "langchain-anthropic",
+    "langchain-google-genai",
+    "langchain-openai",
+    "langchain-ollama",
+    "google-api-python-client",
+    "google-auth-httplib2",
+    "google-auth-oauthlib",
+    "discord.py",
+    "typer[all]",
+    "aiofiles",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
+
+[project.scripts]
+agentproxy = "agentproxy.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["agentproxy*"]
+
+[tool.setuptools.package-data]
+agentproxy = ["prompts.yaml"]
+
 [tool.pytest.ini_options]
 markers = [
     "integration: tests that make real API calls (deselect with '-m \"not integration\"')",

@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 
-from agent.email import EmailAgent
-from graph.state import Task
+from agentproxy.agent.email_agent import EmailAgent
+from agentproxy.graph.state import Task
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ class TestEmailAgent:
 @pytest.mark.integration
 class TestEmailAgentLive:
     def test_llm_response(self):
-        from config.settings import get_llm
+        from agentproxy.config.settings import get_llm
 
         llm = get_llm()
         agent = EmailAgent(llm=llm)

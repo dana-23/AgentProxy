@@ -10,7 +10,7 @@ import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from config.settings import BASE_DIR, get_settings
+from agentproxy.config.settings import BASE_DIR, get_settings
 
 LOG_DIR = BASE_DIR / "logs"
 LOG_FILE = LOG_DIR / "agentproxy.log"

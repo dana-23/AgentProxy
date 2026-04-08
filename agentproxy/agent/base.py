@@ -9,7 +9,7 @@ from langchain_core.language_models import BaseChatModel
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from graph.state import AgentState
+from agentproxy.graph.state import AgentState
 
 
 class BaseAgent(ABC):

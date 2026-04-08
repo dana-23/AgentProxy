@@ -13,9 +13,9 @@ from langgraph.graph import StateGraph, START, END
 
 from langgraph.graph import MessagesState
 
-from agent.base import BaseAgent
-from config.settings import BASE_DIR
-from graph.state import Task
+from agentproxy.agent.base import BaseAgent
+from agentproxy.config.settings import BASE_DIR
+from agentproxy.graph.state import Task
 
 
 class RouterState(MessagesState):
@@ -65,7 +65,7 @@ class RouterAgent(BaseAgent):
 if __name__ == "__main__":
     import asyncio
     from langchain_core.messages import HumanMessage
-    from config.settings import get_llm
+    from agentproxy.config.settings import get_llm
 
     llm = get_llm()
     supreme_agent = RouterAgent(llm=llm)

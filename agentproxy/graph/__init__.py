@@ -1,3 +1,3 @@
-from graph.state import AgentState, OrchestratorState, Task
+from agentproxy.graph.state import AgentState, OrchestratorState, Task
 
 __all__ = ["AgentState", "OrchestratorState", "Task"]

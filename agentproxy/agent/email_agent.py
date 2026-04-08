@@ -16,9 +16,9 @@ from langchain_core.tools import tool
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode
 
-from agent.base import BaseAgent
-from config.settings import BASE_DIR
-from graph.state import AgentState
+from agentproxy.agent.base import BaseAgent
+from agentproxy.config.settings import BASE_DIR
+from agentproxy.graph.state import AgentState
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 TOKEN_PATH = BASE_DIR / "token.json"
@@ -142,7 +142,7 @@ class EmailAgent(BaseAgent):
         return graph
 
 if __name__ == "__main__":
-    from config.settings import get_llm
+    from agentproxy.config.settings import get_llm
     import asyncio
 
     async def main():
