@@ -14,7 +14,7 @@ An AI-powered agent that automates daily tasks, acting as a personal proxy to ha
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.12+
 - An API key for your chosen LLM provider
 
 ### Installation
@@ -22,7 +22,8 @@ An AI-powered agent that automates daily tasks, acting as a personal proxy to ha
 ```bash
 git clone https://github.com/yourusername/AgentProxy.git
 cd AgentProxy
-pip install -r requirements.txt
+python -m venv .venv && source .venv/bin/activate
+pip install -e .
 ```
 
 ### Configuration
@@ -36,5 +37,15 @@ cp .env.example .env
 ### Usage
 
 ```bash
-python main.py
+# Interactive terminal chat
+agentproxy chat
+
+# Use a specific provider/model
+agentproxy chat --provider anthropic --model claude-sonnet-4
+
+# Start the Discord bot
+agentproxy discord
+
+# Show current config
+agentproxy config
 ```
