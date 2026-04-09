@@ -8,7 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 class DiscordServer:
-    def __init__(self, graph: CompiledStateGraph, channel_name: str = "agent-chat", debug: bool = False):
+    def __init__(
+        self,
+        graph: CompiledStateGraph,
+        channel_name: str = "agent-chat",
+        debug: bool = False,
+    ):
         self.graph = graph
         self.channel_name = channel_name
 
@@ -35,7 +40,9 @@ class DiscordServer:
 
             is_dm = isinstance(message.channel, discord.DMChannel)
             mentioned = self.client.user in message.mentions
-            in_agent_channel = getattr(message.channel, "name", None) == self.channel_name
+            in_agent_channel = (
+                getattr(message.channel, "name", None) == self.channel_name
+            )
             if not (is_dm or mentioned or in_agent_channel):
                 return
 
@@ -56,7 +63,11 @@ class DiscordServer:
                 content = result["messages"][-1].content
                 if isinstance(content, list):
                     reply = next(
-                        (block["text"] for block in content if block.get("type") == "text"),
+                        (
+                            block["text"]
+                            for block in content
+                            if block.get("type") == "text"
+                        ),
                         "",
                     )
                 else:

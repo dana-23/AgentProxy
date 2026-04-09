@@ -15,7 +15,12 @@ app = typer.Typer(
 
 @app.command()
 def chat(
-    provider: str = typer.Option(None, "--provider", "-p", help="LLM provider (anthropic, google, openai, ollama)"),
+    provider: str = typer.Option(
+        None,
+        "--provider",
+        "-p",
+        help="LLM provider (anthropic, google, openai, ollama)",
+    ),
     model: str = typer.Option(None, "--model", "-m", help="Model name to use"),
 ):
     """Start an interactive terminal chat session."""
@@ -29,6 +34,10 @@ def chat(
     setup_logging()
     llm = get_llm(provider, model)
     graph = build_orchestrator(llm)
+
+    print(graph.get_graph().draw_ascii())
+    print("\n" + "=" * 60 + "\n")
+
     config = {"configurable": {"thread_id": "cli-session"}}
 
     typer.echo("AgentProxy chat (type 'quit' to exit)\n")
@@ -62,7 +71,9 @@ def chat(
 def discord(
     provider: str = typer.Option(None, "--provider", "-p", help="LLM provider"),
     model: str = typer.Option(None, "--model", "-m", help="Model name"),
-    channel: str = typer.Option("agent-chat", "--channel", "-c", help="Discord channel to listen on"),
+    channel: str = typer.Option(
+        "agent-chat", "--channel", "-c", help="Discord channel to listen on"
+    ),
 ):
     """Start the Discord bot."""
     from agentproxy.config.settings import get_llm, get_settings
@@ -80,7 +91,9 @@ def discord(
 def run(
     provider: str = typer.Option(None, "--provider", "-p", help="LLM provider"),
     model: str = typer.Option(None, "--model", "-m", help="Model name"),
-    interface: str = typer.Option("chat", "--interface", "-i", help="Interface to start (chat, discord)"),
+    interface: str = typer.Option(
+        "chat", "--interface", "-i", help="Interface to start (chat, discord)"
+    ),
 ):
     """Start AgentProxy with the given interface (default: chat)."""
     ctx = typer.Context

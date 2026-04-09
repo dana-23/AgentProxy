@@ -10,7 +10,6 @@ from langchain_core.messages import AIMessage, HumanMessage
 from agentproxy.agent.email_agent import EmailAgent
 from agentproxy.graph.state import Task
 
-
 # ── Fixtures ─────────────────────────────────────────────────────────
 
 
@@ -76,10 +75,12 @@ class TestEmailAgentLive:
         llm = get_llm()
         agent = EmailAgent(llm=llm)
 
-        result = agent(state=_make_state(
-            message="Write a haiku about AI",
-            goal="Write a haiku",
-        ))
+        result = agent(
+            state=_make_state(
+                message="Write a haiku about AI",
+                goal="Write a haiku",
+            )
+        )
 
         assert result["result"]["summary"]
         assert len(result["result"]["summary"]) > 10

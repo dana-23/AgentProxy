@@ -11,8 +11,9 @@ from agentproxy.agent.finance_agent import FinanceAgent
 def build_agent_registry(llm):
     return {
         "email": EmailAgent(llm=llm).compile(),
-        "finance": FinanceAgent(llm=llm).compile()
+        "finance": FinanceAgent(llm=llm).compile(),
     }
+
 
 def make_agent_node(compiled_agent):
     async def node(state: OrchestratorState):
@@ -21,13 +22,16 @@ def make_agent_node(compiled_agent):
             "agent_results": [result],
             "messages": [result["messages"][-1]],
         }
+
     return node
+
 
 def dispatch(state: OrchestratorState):
     return [
         Send(task["agent"], {"messages": state["messages"], "task": task})
         for task in state["plan"]
     ]
+
 
 def build_orchestrator(llm):
     router = RouterAgent(llm=llm).compile()
@@ -50,6 +54,7 @@ def build_orchestrator(llm):
 
     return graph.compile(checkpointer=MemorySaver())
 
+
 if __name__ == "__main__":
     import asyncio
     from agentproxy.config.settings import get_llm
@@ -62,9 +67,7 @@ if __name__ == "__main__":
         print("\n" + "=" * 60 + "\n")
 
         response = await graph.ainvoke(
-            {"messages": [HumanMessage(
-                content="What did I buy today?"
-            )]},
+            {"messages": [HumanMessage(content="What did I buy today?")]},
             config={"configurable": {"thread_id": "test"}},
         )
         last_msg = response["messages"][-1]

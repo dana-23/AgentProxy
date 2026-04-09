@@ -4,7 +4,9 @@ import operator
 from dataclasses import dataclass, field
 from typing import Annotated, Any
 
-from langchain_core.messages import AnyMessage  # needed for get_type_hints on Python <3.12
+from langchain_core.messages import (
+    AnyMessage,
+)  # needed for get_type_hints on Python <3.12
 from langgraph.graph import MessagesState, add_messages
 
 
@@ -16,7 +18,7 @@ class AgentState(MessagesState):
     Extends MessagesState (which provides a `messages` list with
     add-semantics) and adds fields the orchestrator injects.
     """
-    
+
     task: dict[str, Any]
     result: Annotated[list[str], operator.add]
 

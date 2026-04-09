@@ -3,7 +3,8 @@ from pathlib import Path
 from pydantic_settings import BaseSettings
 
 PACKAGE_DIR = Path(__file__).resolve().parent.parent  # agentproxy/
-BASE_DIR = PACKAGE_DIR.parent                         # project root
+BASE_DIR = PACKAGE_DIR.parent  # project root
+
 
 class Settings(BaseSettings):
     # --- App ---

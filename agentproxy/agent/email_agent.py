@@ -24,7 +24,7 @@ SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 TOKEN_PATH = BASE_DIR / "token.json"
 CREDENTIALS_PATH = BASE_DIR / "credentials.json"
 
-prompts_path = os.path.join(os.path.dirname(__file__), '..', 'prompts.yaml')
+prompts_path = os.path.join(os.path.dirname(__file__), "..", "prompts.yaml")
 
 
 def _get_gmail_service():
@@ -59,9 +59,9 @@ def fetch_emails(max_results: int = 10) -> list[dict[str, str]]:
     max_results = min(max_results, 50)
     service = _get_gmail_service()
 
-    results = service.users().messages().list(
-        userId="me", maxResults=max_results
-    ).execute()
+    results = (
+        service.users().messages().list(userId="me", maxResults=max_results).execute()
+    )
     messages = results.get("messages", [])
 
     if not messages:
@@ -69,12 +69,17 @@ def fetch_emails(max_results: int = 10) -> list[dict[str, str]]:
 
     emails = []
     for message in messages:
-        msg = service.users().messages().get(
-            userId="me",
-            id=message["id"],
-            format="metadata",
-            metadataHeaders=["Subject", "From"],
-        ).execute()
+        msg = (
+            service.users()
+            .messages()
+            .get(
+                userId="me",
+                id=message["id"],
+                format="metadata",
+                metadataHeaders=["Subject", "From"],
+            )
+            .execute()
+        )
 
         headers = msg.get("payload", {}).get("headers", [])
         subject = "No Subject"
@@ -86,11 +91,13 @@ def fetch_emails(max_results: int = 10) -> list[dict[str, str]]:
             if header["name"] == "From":
                 sender = header["value"]
 
-        emails.append({
-            "from": sender,
-            "subject": subject,
-            "snippet": msg.get("snippet", ""),
-        })
+        emails.append(
+            {
+                "from": sender,
+                "subject": subject,
+                "snippet": msg.get("snippet", ""),
+            }
+        )
 
     return emails
 
@@ -104,16 +111,17 @@ class EmailAgent(BaseAgent):
               |          |
               |<- TOOL <-|
     """
+
     name: str = "email"
 
     def build_graph(self) -> StateGraph:
         llm_with_tools = self.llm.bind_tools(TOOLS)
 
-        with open(prompts_path, 'r') as file:
+        with open(prompts_path, "r") as file:
             data = yaml.safe_load(file)
 
         system = SystemMessage(
-            content=data.get("agents", {}).get(f"{self.name}", {}).get('system')
+            content=data.get("agents", {}).get(f"{self.name}", {}).get("system")
         )
 
         def call_llm(state: AgentState) -> dict:
@@ -133,13 +141,18 @@ class EmailAgent(BaseAgent):
         graph.add_node("tools", ToolNode(TOOLS))
 
         graph.add_edge(START, "call_llm")
-        graph.add_conditional_edges("call_llm", should_use_tool, {
-            "tools": "tools",
-            "done": END,
-        })
+        graph.add_conditional_edges(
+            "call_llm",
+            should_use_tool,
+            {
+                "tools": "tools",
+                "done": END,
+            },
+        )
         graph.add_edge("tools", "call_llm")
 
         return graph
+
 
 if __name__ == "__main__":
     from agentproxy.config.settings import get_llm
@@ -148,15 +161,19 @@ if __name__ == "__main__":
     async def main():
         llm = get_llm()
         email_agent = EmailAgent(llm=llm)
-        result = await email_agent(state={"messages": "Summarize my last received email."})
+        result = await email_agent(
+            state={"messages": "Summarize my last received email."}
+        )
 
         # Print only the final AI response
         last_msg = result["messages"][-1]
         content = last_msg.content
         if isinstance(content, list):
-            text = next((block["text"] for block in content if block.get("type") == "text"), "")
+            text = next(
+                (block["text"] for block in content if block.get("type") == "text"), ""
+            )
         else:
             text = content
         print(text)
-    
+
     asyncio.run(main())

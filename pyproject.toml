@@ -37,6 +37,7 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-asyncio",
+    "black",
 ]
 
 [project.scripts]
@@ -47,6 +48,10 @@ include = ["agentproxy*"]
 
 [tool.setuptools.package-data]
 agentproxy = ["prompts.yaml"]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
 
 [tool.pytest.ini_options]
 markers = [

@@ -1,4 +1,4 @@
-""" A Router Agent - Allocate's work to subagents."""
+"""A Router Agent - Allocate's work to subagents."""
 
 from __future__ import annotations
 
@@ -21,12 +21,16 @@ from agentproxy.graph.state import Task
 class RouterState(MessagesState):
     tasks: list[dict]
 
-prompts_path = os.path.join(os.path.dirname(__file__), '..', 'prompts.yaml')
+
+prompts_path = os.path.join(os.path.dirname(__file__), "..", "prompts.yaml")
+
 
 class CallSubAgent(BaseModel):
     tasks: List[Task]
 
+
 KNOWN_AGENTS = {"email", "finance"}  # expand as new agents are added
+
 
 class RouterAgent(BaseAgent):
 
@@ -35,18 +39,23 @@ class RouterAgent(BaseAgent):
     def build_graph(self) -> StateGraph:
         structure_llm = self.llm.with_structured_output(CallSubAgent)
 
-        with open(prompts_path, 'r') as file:
+        with open(prompts_path, "r") as file:
             data = yaml.safe_load(file)
 
         system = SystemMessage(
-            content=data.get("agents", {}).get(f"{self.name}", {}).get('system')
+            content=data.get("agents", {}).get(f"{self.name}", {}).get("system")
         )
 
         def call_llm(state: RouterState) -> dict:
             messages = [system] + list(state["messages"])
             response = structure_llm.invoke(messages)
             tasks = [
-                {"agent": t.agent, "goal": t.goal, "context": t.context, "depends_on": t.depends_on}
+                {
+                    "agent": t.agent,
+                    "goal": t.goal,
+                    "context": t.context,
+                    "depends_on": t.depends_on,
+                }
                 for t in response.tasks
                 if t.agent in KNOWN_AGENTS
             ]
@@ -60,7 +69,7 @@ class RouterAgent(BaseAgent):
         graph.add_edge("call_llm", END)
 
         return graph
-    
+
 
 if __name__ == "__main__":
     import asyncio
@@ -70,9 +79,14 @@ if __name__ == "__main__":
     llm = get_llm()
     supreme_agent = RouterAgent(llm=llm)
     result = asyncio.run(
-        supreme_agent(state={"messages": [HumanMessage(
-            content="Summarize my recent email and write a follow up email to john doe (email in recent emails) for his car's extended warrenty."
-            )]}
+        supreme_agent(
+            state={
+                "messages": [
+                    HumanMessage(
+                        content="Summarize my recent email and write a follow up email to john doe (email in recent emails) for his car's extended warrenty."
+                    )
+                ]
+            }
         )
     )
 
