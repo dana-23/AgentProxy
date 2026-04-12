@@ -24,6 +24,7 @@ aiosqlite
 python-multipart
 sse-starlette
 websockets
+rich
 
 # Graph
 langgraph

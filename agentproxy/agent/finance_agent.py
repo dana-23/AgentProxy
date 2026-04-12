@@ -82,7 +82,7 @@ async def make_entry(date: str, vendor: str, category: str, amount: float) -> st
     async with aiofiles.open(filepath, "a") as f:
         await f.write(row)
 
-    logger.info("Entry added successfully")
+    logger.debug("Entry added successfully")
     return f"Added: {date} | {vendor} | {category} | ${amount:.2f}"
 
 
@@ -99,7 +99,7 @@ async def find_file_by_period(directory: str, target_period: str) -> str | None:
     Returns:
         The filepath of the matching markdown file, or None if no file matches.
     """
-    logger.info("Searching for period=%s in %s", target_period, directory)
+    logger.debug("Searching for period=%s in %s", target_period, directory)
     for filename in os.listdir(directory):
         if not filename.endswith(".md"):
             continue
@@ -114,7 +114,7 @@ async def find_file_by_period(directory: str, target_period: str) -> str | None:
                 frontmatter = frontmatter_match.group(1)
                 # Look for the period key in the frontmatter
                 if f'period: "{target_period}"' in frontmatter:
-                    logger.info("Found match: %s", filepath)
+                    logger.debug("Found match: %s", filepath)
                     return filepath  # Match found, stop searching!
     logger.warning("No file found for period=%s", target_period)
     return None
@@ -132,7 +132,7 @@ async def get_expenses(filepath: str) -> list[dict[str, str]]:
     Returns:
         A list of dicts, each with keys: date, vendor, category, amount.
     """
-    logger.info("Reading expenses from %s", filepath)
+    logger.debug("Reading expenses from %s", filepath)
     rows = []
     async with aiofiles.open(filepath, "r") as file:
         lines = await file.readlines()
@@ -153,7 +153,7 @@ async def get_expenses(filepath: str) -> list[dict[str, str]]:
                             "amount": columns[3],
                         }
                     )
-    logger.info("Found %d expense rows", len(rows))
+    logger.debug("Found %d expense rows", len(rows))
     return rows
 
 
@@ -169,7 +169,7 @@ def get_today() -> str:
     from datetime import date
 
     today = date.today().isoformat()
-    logger.info("Today's date: %s", today)
+    logger.debug("Today's date: %s", today)
     return today
 
 
@@ -185,7 +185,7 @@ def calculate_total(amounts: list[float]) -> float:
         The total sum as a float.
     """
     total = sum(amounts)
-    logger.info("Calculated total: %.2f from %d amounts", total, len(amounts))
+    logger.debug("Calculated total: %.2f from %d amounts", total, len(amounts))
     return total
 
 
@@ -230,7 +230,7 @@ class FinanceAgent(BaseAgent):
         def should_use_tool(state: AgentState) -> str:
             last = state["messages"][-1]
             if hasattr(last, "tool_calls") and last.tool_calls:
-                logger.info(
+                logger.debug(
                     "Routing to tools: %s", [tc["name"] for tc in last.tool_calls]
                 )
                 return "tools"
