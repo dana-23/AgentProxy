@@ -3,14 +3,52 @@
 from __future__ import annotations
 
 import asyncio
+import uuid
 
 import typer
+from rich.console import Console
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.theme import Theme
+
+theme = Theme(
+    {
+        "user": "bold cyan",
+        "agent": "bold green",
+        "info": "dim",
+        "warn": "bold yellow",
+    }
+)
+console = Console(theme=theme)
 
 app = typer.Typer(
     name="agentproxy",
     help="AI-powered agent that automates daily tasks.",
     add_completion=False,
 )
+
+
+def _extract_text(result: dict) -> str:
+    """Pull the text content from the last message in a graph result."""
+    content = result["messages"][-1].content
+    if isinstance(content, list):
+        return next((b["text"] for b in content if b.get("type") == "text"), "")
+    return content
+
+
+def _show_help() -> None:
+    console.print(
+        Panel(
+            "/help    — show this message\n"
+            "/clear   — clear the screen\n"
+            "/config  — show current settings\n"
+            "/new     — start a new session\n"
+            "/graph   — print the orchestrator graph\n"
+            "/quit    — exit",
+            title="[bold]Commands[/bold]",
+            border_style="dim",
+        )
+    )
 
 
 @app.command()
@@ -25,46 +63,87 @@ def chat(
 ):
     """Start an interactive terminal chat session."""
     from langchain_core.messages import HumanMessage
-    from langgraph.checkpoint.memory import MemorySaver
 
     from agentproxy.config.logger import setup_logging
-    from agentproxy.config.settings import get_llm
+    from agentproxy.config.settings import get_llm, get_settings
     from agentproxy.graph.orchestrator import build_orchestrator
 
     setup_logging()
+    settings = get_settings()
     llm = get_llm(provider, model)
     graph = build_orchestrator(llm)
 
-    print(graph.get_graph().draw_ascii())
-    print("\n" + "=" * 60 + "\n")
+    provider_display = provider or settings.default_provider
+    model_display = model or settings.default_model
 
-    config = {"configurable": {"thread_id": "cli-session"}}
+    console.print(
+        Panel(
+            f"[bold]AgentProxy[/bold]\n"
+            f"[info]provider:[/info] {provider_display}  "
+            f"[info]model:[/info] {model_display}\n"
+            f"[info]Type /help for commands[/info]",
+            border_style="cyan",
+        )
+    )
 
-    typer.echo("AgentProxy chat (type 'quit' to exit)\n")
+    thread_id = f"cli-{uuid.uuid4().hex[:8]}"
+    config = {"configurable": {"thread_id": thread_id}}
+
     while True:
         try:
-            user_input = input("You: ").strip()
+            user_input = console.input("[user]> [/user]").strip()
         except (EOFError, KeyboardInterrupt):
-            break
-        if not user_input or user_input.lower() in ("quit", "exit", "q"):
+            console.print()
             break
 
-        result = asyncio.run(
-            graph.ainvoke(
-                {"messages": [HumanMessage(content=user_input)]},
-                config=config,
+        if not user_input:
+            continue
+
+        # --- slash commands ---
+        if user_input.startswith("/"):
+            cmd = user_input.lower().split()[0]
+            if cmd in ("/quit", "/exit", "/q"):
+                break
+            elif cmd == "/help":
+                _show_help()
+            elif cmd == "/clear":
+                console.clear()
+            elif cmd == "/config":
+                console.print(
+                    Panel(
+                        f"provider : {provider_display}\n"
+                        f"model    : {model_display}\n"
+                        f"session  : {thread_id}\n"
+                        f"debug    : {settings.debug}",
+                        title="[bold]Config[/bold]",
+                        border_style="dim",
+                    )
+                )
+            elif cmd == "/new":
+                thread_id = f"cli-{uuid.uuid4().hex[:8]}"
+                config = {"configurable": {"thread_id": thread_id}}
+                console.print("[info]Started new session.[/info]")
+            elif cmd == "/graph":
+                console.print(graph.get_graph().draw_ascii())
+            else:
+                console.print(f"[warn]Unknown command: {cmd}[/warn]")
+            continue
+
+        # --- agent invocation ---
+        with console.status("[info]thinking…[/info]", spinner="dots"):
+            result = asyncio.run(
+                graph.ainvoke(
+                    {"messages": [HumanMessage(content=user_input)]},
+                    config=config,
+                )
             )
-        )
 
-        last_msg = result["messages"][-1]
-        content = last_msg.content
-        if isinstance(content, list):
-            text = next((b["text"] for b in content if b.get("type") == "text"), "")
-        else:
-            text = content
-        typer.echo(f"\nAgent: {text}\n")
+        text = _extract_text(result)
+        console.print()
+        console.print(Markdown(text))
+        console.print()
 
-    typer.echo("Goodbye!")
+    console.print("[info]Goodbye![/info]")
 
 
 @app.command()
