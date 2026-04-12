@@ -52,3 +52,4 @@ def setup_logging() -> None:
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("google").setLevel(logging.WARNING)
+    logging.getLogger("google_genai").setLevel(logging.WARNING)

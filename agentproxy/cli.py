@@ -7,8 +7,11 @@ import uuid
 
 import typer
 from rich.console import Console
+from rich.live import Live
 from rich.markdown import Markdown
 from rich.panel import Panel
+from rich.spinner import Spinner
+from rich.text import Text
 from rich.theme import Theme
 
 theme = Theme(
@@ -34,6 +37,57 @@ def _extract_text(result: dict) -> str:
     if isinstance(content, list):
         return next((b["text"] for b in content if b.get("type") == "text"), "")
     return content
+
+
+_NODE_LABELS = {
+    "route": "routing request",
+    "email": "checking email",
+    "finance": "querying finances",
+}
+
+
+async def _stream_with_status(graph, inputs, config, console):
+    """Run the graph while streaming status updates to the terminal."""
+    status = "thinking"
+    result = None
+
+    with Live(
+        Spinner("dots", text=Text(f" {status}...", style="dim")),
+        console=console,
+        refresh_per_second=12,
+        transient=True,
+    ) as live:
+        async for event in graph.astream_events(inputs, config=config, version="v2"):
+            kind = event["event"]
+            name = event.get("name", "")
+
+            if kind == "on_chain_start" and name in _NODE_LABELS:
+                status = _NODE_LABELS[name]
+
+            elif kind == "on_tool_start":
+                status = f"using tool: {name}"
+
+            elif kind == "on_chat_model_stream":
+                chunk = event["data"]["chunk"]
+                if hasattr(chunk, "content") and chunk.content:
+                    content = chunk.content
+                    if isinstance(content, list):
+                        content = next(
+                            (b["text"] for b in content if b.get("type") == "text"),
+                            "",
+                        )
+                    if content:
+                        preview = content[:50].replace("\n", " ")
+                        status = f"writing: {preview}"
+
+            live.update(
+                Spinner("dots", text=Text(f" {status}...", style="dim"))
+            )
+
+            if kind == "on_chain_end" and not event.get("parent_ids"):
+                result = event["data"].get("output", {})
+
+    return result
 
 
 def _show_help() -> None:
@@ -130,13 +184,14 @@ def chat(
             continue
 
         # --- agent invocation ---
-        with console.status("[info]thinking…[/info]", spinner="dots"):
-            result = asyncio.run(
-                graph.ainvoke(
-                    {"messages": [HumanMessage(content=user_input)]},
-                    config=config,
-                )
+        result = asyncio.run(
+            _stream_with_status(
+                graph,
+                {"messages": [HumanMessage(content=user_input)]},
+                config,
+                console,
             )
+        )
 
         text = _extract_text(result)
         console.print()
